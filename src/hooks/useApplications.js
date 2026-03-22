@@ -1,8 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import {
-  getApplications,
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+} from "firebase/firestore";
+import { db } from "../services/firebase";
+import {
   addApplication,
   updateApplication,
   deleteApplication,
@@ -10,51 +17,89 @@ import {
 
 /**
  * Custom hook for managing job applications with Firestore.
+ * Uses real-time onSnapshot listener for instant data reflection.
  */
 const useApplications = () => {
   const { user } = useAuth();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const unsubRef = useRef(null);
 
-  const fetchApplications = useCallback(async () => {
-    if (!user) return;
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await getApplications(user.uid);
-      setApplications(data);
-    } catch (err) {
-      console.error("Error fetching applications:", err);
-      setError("Failed to load applications.");
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+  // Use user.uid as a stable dependency instead of the full user object
+  const uid = user?.uid;
 
   useEffect(() => {
-    fetchApplications();
-  }, [fetchApplications]);
-
-  const handleAdd = async (applicationData) => {
-    try {
-      setError(null);
-      const newApp = await addApplication(user.uid, applicationData);
-      setApplications((prev) => [newApp, ...prev]);
-      toast.success("Application added successfully");
-      return newApp;
-    } catch (err) {
-      console.error("Error adding application:", err);
-      setError("Failed to add application.");
-      toast.error("Failed to add application");
-      throw err;
+    // Clean up any previous listener
+    if (unsubRef.current) {
+      unsubRef.current();
+      unsubRef.current = null;
     }
-  };
 
-  const handleUpdate = async (id, applicationData) => {
+    if (!uid) {
+      setApplications([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    const q = query(
+      collection(db, "applications"),
+      where("userId", "==", uid),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setApplications(data);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Error listening to applications:", err);
+        setError("Failed to load applications.");
+        setLoading(false);
+      }
+    );
+
+    unsubRef.current = unsubscribe;
+
+    return () => {
+      unsubscribe();
+      unsubRef.current = null;
+    };
+  }, [uid]);
+
+  const handleAdd = useCallback(
+    async (applicationData) => {
+      try {
+        setError(null);
+        const newApp = await addApplication(uid, applicationData);
+        // onSnapshot will auto-update the list, but we optimistically add it
+        setApplications((prev) => [newApp, ...prev]);
+        toast.success("Application added successfully");
+        return newApp;
+      } catch (err) {
+        console.error("Error adding application:", err);
+        setError("Failed to add application.");
+        toast.error("Failed to add application");
+        throw err;
+      }
+    },
+    [uid]
+  );
+
+  const handleUpdate = useCallback(async (id, applicationData) => {
     try {
       setError(null);
       const updated = await updateApplication(id, applicationData);
+      // Optimistic update; onSnapshot will reconcile
       setApplications((prev) =>
         prev.map((app) => (app.id === id ? { ...app, ...updated } : app))
       );
@@ -66,13 +111,14 @@ const useApplications = () => {
       toast.error("Failed to update application");
       throw err;
     }
-  };
+  }, []);
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     try {
       setError(null);
-      await deleteApplication(id);
+      // Optimistic removal
       setApplications((prev) => prev.filter((app) => app.id !== id));
+      await deleteApplication(id);
       toast.success("Application deleted");
     } catch (err) {
       console.error("Error deleting application:", err);
@@ -80,7 +126,7 @@ const useApplications = () => {
       toast.error("Failed to delete application");
       throw err;
     }
-  };
+  }, []);
 
   return {
     applications,
@@ -89,7 +135,6 @@ const useApplications = () => {
     addApplication: handleAdd,
     updateApplication: handleUpdate,
     deleteApplication: handleDelete,
-    refreshApplications: fetchApplications,
   };
 };
 
