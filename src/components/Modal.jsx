@@ -50,8 +50,8 @@ const Modal = ({ isOpen, onClose, onSubmit, initialData = null }) => {
     try {
       setSubmitting(true);
       await onSubmit(formData);
-      setFormData(emptyForm);
       onClose();
+      setFormData(emptyForm);
     } catch (error) {
       console.error("Submit error:", error);
     } finally {

@@ -3,7 +3,6 @@ import {
   addDoc,
   query,
   where,
-  orderBy,
   onSnapshot,
   serverTimestamp,
   updateDoc,
@@ -44,17 +43,29 @@ export const subscribeToNotifications = (userId, callback) => {
   const q = query(
     collection(db, COLLECTION),
     where("userId", "==", userId),
-    orderBy("createdAt", "desc"),
     firestoreLimit(20)
   );
 
-  return onSnapshot(q, (snapshot) => {
-    const notifications = snapshot.docs.map((d) => ({
-      id: d.id,
-      ...d.data(),
-    }));
-    callback(notifications);
-  });
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const notifications = snapshot.docs
+        .map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }))
+        .sort((a, b) => {
+          const aTime = a.createdAt?.toMillis?.() || 0;
+          const bTime = b.createdAt?.toMillis?.() || 0;
+          return bTime - aTime;
+        });
+      callback(notifications);
+    },
+    (error) => {
+      console.error("Notification listener error:", error);
+      callback([]);
+    }
+  );
 };
 
 /**

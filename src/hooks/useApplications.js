@@ -82,10 +82,10 @@ const useApplications = () => {
       try {
         setError(null);
         const newApp = await addApplication(uid, applicationData);
-        // onSnapshot will auto-update the list, but we optimistically add it
         setApplications((prev) => [newApp, ...prev]);
         toast.success("Application added successfully");
-        addNotification(uid, "added", `Added application: ${applicationData.position} at ${applicationData.company}`);
+        // Fire-and-forget — don't block the UI
+        addNotification(uid, "added", `Added: ${applicationData.position} at ${applicationData.company}`);
         return newApp;
       } catch (err) {
         console.error("Error adding application:", err);
@@ -106,7 +106,7 @@ const useApplications = () => {
         prev.map((app) => (app.id === id ? { ...app, ...updated } : app))
       );
       toast.success("Application updated");
-      addNotification(uid, "updated", `Updated application: ${applicationData.position || ""} ${applicationData.company ? "at " + applicationData.company : ""}`.trim());
+      addNotification(uid, "updated", `Updated: ${applicationData.position || ""} ${applicationData.company ? "at " + applicationData.company : ""}`.trim());
       return updated;
     } catch (err) {
       console.error("Error updating application:", err);
