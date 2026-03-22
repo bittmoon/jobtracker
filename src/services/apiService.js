@@ -35,9 +35,10 @@ export const fetchJobCategories = async () => {
 
 /**
  * Aggregate trending job roles from fetched data.
+ * Returns roles with their nested job listings for dropdown display.
  */
 export const getTrendingRoles = (jobs) => {
-  const roleCounts = {};
+  const roleMap = {};
   jobs.forEach((job) => {
     const title = job.title
       ?.replace(/senior|junior|lead|principal|staff|sr\.|jr\./gi, "")
@@ -45,12 +46,21 @@ export const getTrendingRoles = (jobs) => {
       .split(/[/,\-–(]/)[0]
       .trim();
     if (title) {
-      roleCounts[title] = (roleCounts[title] || 0) + 1;
+      if (!roleMap[title]) {
+        roleMap[title] = [];
+      }
+      roleMap[title].push({
+        id: job.id,
+        title: job.title,
+        company: job.company_name,
+        location: job.candidate_required_location || "Remote",
+        url: job.url,
+      });
     }
   });
 
-  return Object.entries(roleCounts)
-    .sort(([, a], [, b]) => b - a)
+  return Object.entries(roleMap)
+    .sort(([, a], [, b]) => b.length - a.length)
     .slice(0, 8)
-    .map(([role, count]) => ({ role, count }));
+    .map(([role, jobs]) => ({ role, count: jobs.length, jobs }));
 };

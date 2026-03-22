@@ -20,6 +20,7 @@ import {
   ExternalLink,
   MapPin,
   Sparkles,
+  ChevronDown,
 } from "lucide-react";
 import {
   PieChart,
@@ -54,6 +55,7 @@ const DashboardPage = () => {
   const [remoteJobs, setRemoteJobs] = useState([]);
   const [trendingRoles, setTrendingRoles] = useState([]);
   const [jobsLoading, setJobsLoading] = useState(true);
+  const [expandedRoles, setExpandedRoles] = useState({});
 
   useEffect(() => {
     const loadJobs = async () => {
@@ -245,25 +247,71 @@ const DashboardPage = () => {
               ))}
             </div>
           ) : trendingRoles.length > 0 ? (
-            <div className="space-y-2">
-              {trendingRoles.map((role, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-surface-800/40 hover:bg-surface-800/80 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-primary-500/10 text-primary-400 text-xs font-bold">
-                      {i + 1}
-                    </span>
-                    <span className="text-sm text-surface-200 truncate max-w-[200px]">
-                      {role.role}
-                    </span>
+            <div className="space-y-1.5">
+              {trendingRoles.map((role, i) => {
+                const isExpanded = expandedRoles[role.role];
+                return (
+                  <div key={i} className="rounded-xl overflow-hidden">
+                    {/* Role Header - clickable */}
+                    <button
+                      onClick={() =>
+                        setExpandedRoles((prev) => ({
+                          ...prev,
+                          [role.role]: !prev[role.role],
+                        }))
+                      }
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl bg-surface-800/40 hover:bg-surface-800/80 transition-all duration-200 group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-primary-500/10 text-primary-400 text-xs font-bold">
+                          {i + 1}
+                        </span>
+                        <span className="text-sm text-surface-200 truncate max-w-[180px] text-left">
+                          {role.role}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-surface-500">
+                          {role.count} {role.count === 1 ? "listing" : "listings"}
+                        </span>
+                        <ChevronDown
+                          className={`w-4 h-4 text-surface-500 transition-transform duration-200 ${
+                            isExpanded ? "rotate-180" : ""
+                          }`}
+                        />
+                      </div>
+                    </button>
+
+                    {/* Expanded Job Listings */}
+                    {isExpanded && role.jobs && (
+                      <div className="mt-1 ml-9 space-y-1 animate-fade-in">
+                        {role.jobs.map((job) => (
+                          <a
+                            key={job.id}
+                            href={job.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-2 rounded-lg bg-surface-800/20 hover:bg-surface-800/50 transition-colors group/job"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-medium text-surface-300 group-hover/job:text-primary-400 transition-colors truncate">
+                                {job.title}
+                              </p>
+                              <p className="text-[11px] text-surface-500 flex items-center gap-1 mt-0.5">
+                                {job.company}
+                                <span className="text-surface-600">·</span>
+                                <MapPin className="w-3 h-3 inline" />
+                                {job.location}
+                              </p>
+                            </div>
+                            <ExternalLink className="w-3 h-3 text-surface-600 group-hover/job:text-primary-400 transition-colors shrink-0 ml-2" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <span className="text-xs text-surface-500">
-                    {role.count} {role.count === 1 ? "listing" : "listings"}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p className="text-sm text-surface-500">No trending data available</p>

@@ -14,6 +14,7 @@ import {
   updateApplication,
   deleteApplication,
 } from "../services/applicationService";
+import { addNotification } from "../services/notificationService";
 
 /**
  * Custom hook for managing job applications with Firestore.
@@ -84,6 +85,7 @@ const useApplications = () => {
         // onSnapshot will auto-update the list, but we optimistically add it
         setApplications((prev) => [newApp, ...prev]);
         toast.success("Application added successfully");
+        addNotification(uid, "added", `Added application: ${applicationData.position} at ${applicationData.company}`);
         return newApp;
       } catch (err) {
         console.error("Error adding application:", err);
@@ -104,6 +106,7 @@ const useApplications = () => {
         prev.map((app) => (app.id === id ? { ...app, ...updated } : app))
       );
       toast.success("Application updated");
+      addNotification(uid, "updated", `Updated application: ${applicationData.position || ""} ${applicationData.company ? "at " + applicationData.company : ""}`.trim());
       return updated;
     } catch (err) {
       console.error("Error updating application:", err);
@@ -111,7 +114,7 @@ const useApplications = () => {
       toast.error("Failed to update application");
       throw err;
     }
-  }, []);
+  }, [uid]);
 
   const handleDelete = useCallback(async (id) => {
     try {
@@ -120,13 +123,14 @@ const useApplications = () => {
       setApplications((prev) => prev.filter((app) => app.id !== id));
       await deleteApplication(id);
       toast.success("Application deleted");
+      addNotification(uid, "deleted", "Removed an application");
     } catch (err) {
       console.error("Error deleting application:", err);
       setError("Failed to delete application.");
       toast.error("Failed to delete application");
       throw err;
     }
-  }, []);
+  }, [uid]);
 
   return {
     applications,
