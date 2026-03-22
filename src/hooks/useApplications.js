@@ -5,7 +5,6 @@ import {
   collection,
   query,
   where,
-  orderBy,
   onSnapshot,
 } from "firebase/firestore";
 import { db } from "../services/firebase";
@@ -48,17 +47,22 @@ const useApplications = () => {
 
     const q = query(
       collection(db, "applications"),
-      where("userId", "==", uid),
-      orderBy("createdAt", "desc")
+      where("userId", "==", uid)
     );
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const data = snapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+          .sort((a, b) => {
+            const aTime = a.createdAt?.toMillis?.() || 0;
+            const bTime = b.createdAt?.toMillis?.() || 0;
+            return bTime - aTime;
+          });
         setApplications(data);
         setLoading(false);
       },
