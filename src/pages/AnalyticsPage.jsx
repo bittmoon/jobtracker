@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import useApplications from "../hooks/useApplications";
 import ChartCard from "../components/ChartCard";
 import StatCard from "../components/StatCard";
@@ -22,14 +23,11 @@ import {
   Cell,
   BarChart,
   Bar,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
   Area,
   AreaChart,
 } from "recharts";
@@ -53,19 +51,24 @@ const CustomTooltip = ({ active, payload, label }) => {
 const AnalyticsPage = () => {
   const { applications, loading } = useApplications();
 
-  const statusData = aggregateByStatus(applications);
-  const monthData = aggregateByMonth(applications);
-  const timelineData = getApplicationsOverTime(applications);
+  const statusData = useMemo(() => aggregateByStatus(applications), [applications]);
+  const monthData = useMemo(() => aggregateByMonth(applications), [applications]);
+  const timelineData = useMemo(() => getApplicationsOverTime(applications), [applications]);
 
-  const totalApps = applications.length;
-  const interviews = applications.filter((a) => a.status === "Interview").length;
-  const offers = applications.filter((a) => a.status === "Offer").length;
-  const responseRate =
-    totalApps > 0
-      ? Math.round(((interviews + offers) / totalApps) * 100)
-      : 0;
-  const offerRate =
-    totalApps > 0 ? Math.round((offers / totalApps) * 100) : 0;
+  const { totalApps, responseRate, offerRate } = useMemo(() => {
+    const totalApps = applications.length;
+    let interviews = 0;
+    let offers = 0;
+    applications.forEach((a) => {
+      if (a.status === "Interview") interviews++;
+      if (a.status === "Offer") offers++;
+    });
+
+    const responseRate = totalApps > 0 ? Math.round(((interviews + offers) / totalApps) * 100) : 0;
+    const offerRate = totalApps > 0 ? Math.round((offers / totalApps) * 100) : 0;
+
+    return { totalApps, interviews, offers, responseRate, offerRate };
+  }, [applications]);
 
   if (loading) {
     return (

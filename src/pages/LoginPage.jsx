@@ -38,7 +38,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-surface-950 flex">
+    <div className="min-h-screen bg-surface-900 flex">
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary-900/40 via-surface-950 to-accent-900/20" />
@@ -93,14 +93,14 @@ const LoginPage = () => {
               <label className="block text-sm font-medium text-surface-300 mb-1.5">
                 Email
               </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500" />
+              <div className="relative flex items-center">
+                <Mail className="absolute left-3 w-4 h-4 text-surface-500 pointer-events-none" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="input-field pl-10"
+                  className="input-field pl-10 w-full"
                   autoComplete="email"
                 />
               </div>
@@ -110,14 +110,14 @@ const LoginPage = () => {
               <label className="block text-sm font-medium text-surface-300 mb-1.5">
                 Password
               </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500" />
+              <div className="relative flex items-center">
+                <Lock className="absolute left-3 w-4 h-4 text-surface-500 pointer-events-none" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="input-field pl-10"
+                  className="input-field pl-10 w-full"
                   autoComplete="current-password"
                 />
               </div>

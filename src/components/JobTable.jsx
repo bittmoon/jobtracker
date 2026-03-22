@@ -58,7 +58,7 @@ const JobTable = ({ applications, onEdit, onDelete, loading }) => {
             {applications.map((app) => (
               <tr
                 key={app.id}
-                className="hover:bg-surface-800/20 transition-colors"
+                className="hover:bg-surface-900 border-b border-surface-800/30 last:border-0 transition-colors"
               >
                 <td className="px-5 py-4">
                   <span className="text-sm font-medium text-surface-200">
@@ -111,9 +111,9 @@ const JobTable = ({ applications, onEdit, onDelete, loading }) => {
       </div>
 
       {/* Mobile Cards */}
-      <div className="lg:hidden divide-y divide-surface-800/30">
+      <div className="lg:hidden">
         {applications.map((app) => (
-          <div key={app.id} className="p-4 space-y-3">
+          <div key={app.id} className="p-4 space-y-3 border-b border-surface-800/50 last:border-0">
             <div className="flex items-start justify-between">
               <div>
                 <h4 className="text-sm font-semibold text-surface-200">

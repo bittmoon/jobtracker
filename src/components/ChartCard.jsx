@@ -1,8 +1,8 @@
 const ChartCard = ({ title, subtitle, children, className = "" }) => {
   return (
-    <div className={`glass-card p-5 animate-fade-in ${className}`}>
+    <div className={`glass-card p-5 animate-fade-in hover:shadow-[0_12px_40px_-8px_rgba(0,0,0,0.8)] transition-all duration-300 group ${className}`}>
       <div className="mb-4">
-        <h3 className="text-base font-semibold text-surface-100">{title}</h3>
+        <h3 className="text-base font-semibold text-surface-100 group-hover:text-primary-400 transition-colors">{title}</h3>
         {subtitle && (
           <p className="text-xs text-surface-500 mt-0.5">{subtitle}</p>
         )}

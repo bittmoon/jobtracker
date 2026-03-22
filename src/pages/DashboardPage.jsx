@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import useApplications from "../hooks/useApplications";
 import { fetchRemoteJobs, getTrendingRoles } from "../services/apiService";
@@ -50,7 +50,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const DashboardPage = () => {
   const { user } = useAuth();
-  const { applications, loading } = useApplications();
+  const { applications } = useApplications();
   const [remoteJobs, setRemoteJobs] = useState([]);
   const [trendingRoles, setTrendingRoles] = useState([]);
   const [jobsLoading, setJobsLoading] = useState(true);
@@ -70,13 +70,19 @@ const DashboardPage = () => {
     loadJobs();
   }, []);
 
-  const totalApps = applications.length;
-  const interviews = applications.filter((a) => a.status === "Interview").length;
-  const offers = applications.filter((a) => a.status === "Offer").length;
-  const rejected = applications.filter((a) => a.status === "Rejected").length;
+  const { totalApps, interviews, offers, rejected } = useMemo(() => {
+    const totalApps = applications.length;
+    let interviews = 0, offers = 0, rejected = 0;
+    applications.forEach((a) => {
+      if (a.status === "Interview") interviews++;
+      if (a.status === "Offer") offers++;
+      if (a.status === "Rejected") rejected++;
+    });
+    return { totalApps, interviews, offers, rejected };
+  }, [applications]);
 
-  const statusData = aggregateByStatus(applications);
-  const monthData = aggregateByMonth(applications);
+  const statusData = useMemo(() => aggregateByStatus(applications), [applications]);
+  const monthData = useMemo(() => aggregateByMonth(applications), [applications]);
 
   const firstName = user?.displayName?.split(" ")[0] || "there";
 

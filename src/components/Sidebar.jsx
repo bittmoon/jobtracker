@@ -15,7 +15,7 @@ const navItems = [
   { to: "/analytics", icon: BarChart3, label: "Analytics" },
 ];
 
-const Sidebar = ({ isOpen, onClose }) => {
+const Sidebar = ({ isOpen, isCollapsed, onClose }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -40,17 +40,21 @@ const Sidebar = ({ isOpen, onClose }) => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-[260px] bg-surface-950/95 backdrop-blur-xl border-r border-surface-800/50 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 h-full bg-surface-900 backdrop-blur-xl border-r border-surface-800 flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        } ${isCollapsed ? "w-20" : "w-64"}`}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between px-6 h-16 border-b border-surface-800/50">
+        <div className={`flex items-center h-16 border-b border-surface-800/50 px-4 transition-all duration-300 ${isCollapsed ? "justify-center" : "justify-between"}`}>
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center shadow-lg shadow-primary-900/20 shadow-inner shrink-0">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
-            <span className="text-lg font-bold gradient-text">JobTrackr</span>
+            {!isCollapsed && (
+              <span className="text-lg font-bold text-surface-50 tracking-tight whitespace-nowrap overflow-hidden">
+                JobTrackr
+              </span>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -61,22 +65,25 @@ const Sidebar = ({ isOpen, onClose }) => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               onClick={onClose}
+              title={isCollapsed ? item.label : ""}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
+                `flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
+                  isCollapsed ? "justify-center" : "gap-3"
+                } ${
                   isActive
-                    ? "bg-primary-500/10 text-primary-400 border border-primary-500/20"
-                    : "text-surface-400 hover:text-surface-200 hover:bg-surface-800/50"
+                    ? "text-primary-400 bg-surface-800/70 border border-surface-700/50 shadow-[inset_4px_0_0_0_var(--color-primary-500)]"
+                    : "text-surface-400 hover:text-surface-100 hover:bg-surface-800/30 border border-transparent"
                 }`
               }
             >
-              <item.icon className="w-[18px] h-[18px] transition-transform group-hover:scale-110" />
-              {item.label}
+              <item.icon className="w-5 h-5 transition-transform group-hover:scale-110 shrink-0 mr-3" />
+              {!isCollapsed && <span className="whitespace-nowrap font-medium text-[15px]">{item.label}</span>}
             </NavLink>
           ))}
         </nav>
@@ -85,10 +92,13 @@ const Sidebar = ({ isOpen, onClose }) => {
         <div className="px-3 pb-4">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-medium text-surface-400 hover:text-danger-400 hover:bg-danger-500/10 transition-all duration-200 group"
+            title={isCollapsed ? "Logout" : ""}
+            className={`flex items-center w-full rounded-xl text-sm font-medium text-surface-400 hover:text-danger-400 hover:bg-danger-500/10 transition-all duration-200 group ${
+              isCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
+            }`}
           >
-            <LogOut className="w-[18px] h-[18px] transition-transform group-hover:scale-110" />
-            Logout
+            <LogOut className="w-5 h-5 transition-transform group-hover:scale-110 shrink-0 mr-3" />
+            {!isCollapsed && <span className="whitespace-nowrap text-[15px]">Logout</span>}
           </button>
         </div>
       </aside>
