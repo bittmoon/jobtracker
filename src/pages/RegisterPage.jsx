@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Sparkles, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 const RegisterPage = () => {
   const [name, setName] = useState("");
@@ -35,6 +36,7 @@ const RegisterPage = () => {
     try {
       setLoading(true);
       await register(email, password, name);
+      toast.success("Account created successfully!");
       navigate("/dashboard");
     } catch (err) {
       const messages = {
@@ -42,7 +44,9 @@ const RegisterPage = () => {
         "auth/invalid-email": "Please enter a valid email address.",
         "auth/weak-password": "Password should be at least 6 characters.",
       };
-      setError(messages[err.code] || "Registration failed. Please try again.");
+      const errorMsg = messages[err.code] || "Registration failed. Please try again.";
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

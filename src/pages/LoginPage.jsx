@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Sparkles, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -23,6 +24,7 @@ const LoginPage = () => {
     try {
       setLoading(true);
       await login(email, password);
+      toast.success("Welcome back!");
       navigate("/dashboard");
     } catch (err) {
       const messages = {
@@ -31,7 +33,9 @@ const LoginPage = () => {
         "auth/wrong-password": "Incorrect password.",
         "auth/too-many-requests": "Too many attempts. Please try again later.",
       };
-      setError(messages[err.code] || "Login failed. Please try again.");
+      const errorMsg = messages[err.code] || "Login failed. Please try again.";
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

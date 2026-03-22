@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
+import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardLayout from "./components/DashboardLayout";
@@ -26,6 +27,26 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <Toaster 
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              background: 'rgba(24, 24, 27, 0.8)',
+              color: '#e4e4e7',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(16px)',
+              boxShadow: '0 8px 32px -8px rgba(0, 0, 0, 0.5)',
+              borderRadius: '1rem',
+              fontSize: '0.875rem',
+            },
+            success: {
+              iconTheme: { primary: '#34d399', secondary: '#18181b' },
+            },
+            error: {
+              iconTheme: { primary: '#ef4444', secondary: '#18181b' },
+            },
+          }}
+        />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Public Routes */}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import {
   getApplications,
@@ -40,10 +41,12 @@ const useApplications = () => {
       setError(null);
       const newApp = await addApplication(user.uid, applicationData);
       setApplications((prev) => [newApp, ...prev]);
+      toast.success("Application added successfully");
       return newApp;
     } catch (err) {
       console.error("Error adding application:", err);
       setError("Failed to add application.");
+      toast.error("Failed to add application");
       throw err;
     }
   };
@@ -55,10 +58,12 @@ const useApplications = () => {
       setApplications((prev) =>
         prev.map((app) => (app.id === id ? { ...app, ...updated } : app))
       );
+      toast.success("Application updated");
       return updated;
     } catch (err) {
       console.error("Error updating application:", err);
       setError("Failed to update application.");
+      toast.error("Failed to update application");
       throw err;
     }
   };
@@ -68,9 +73,11 @@ const useApplications = () => {
       setError(null);
       await deleteApplication(id);
       setApplications((prev) => prev.filter((app) => app.id !== id));
+      toast.success("Application deleted");
     } catch (err) {
       console.error("Error deleting application:", err);
       setError("Failed to delete application.");
+      toast.error("Failed to delete application");
       throw err;
     }
   };
